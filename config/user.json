@@ -1,0 +1,19 @@
+{
+    "name": "Joe",
+    "preferences": {
+      "language": "en",
+      "units": "metric",
+      "timezone": "UTC"
+    },
+    "conversation_history": [],
+    "settings": {
+      "notifications_enabled": true,
+      "theme": "light",
+      "font_size": "medium"
+    },
+    "privacy": {
+      "data_collection": "minimal",
+      "share_analytics": false
+    }
+  }
+  

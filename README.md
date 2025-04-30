@@ -25,7 +25,7 @@ This server powers the assistant’s capabilities by managing task data, schedul
 
 ## Related Projects
 
-- [Personal Life Assistant – Client Desktop](https://github.com/joe-gutman/personal-assistant-desktop-client)
+- [Personal Life Assistant – Desktop Client](https://github.com/joe-gutman/personal-assistant-desktop-client)
 
 ## Installation
 

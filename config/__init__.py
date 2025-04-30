@@ -12,7 +12,4 @@ DB_PORT = os.getenv('DB_PORT')
 class Config:
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    @staticmethod
-    def get_openai_api_key():
-        return os.getenv('OPENAI_API_KEY')    
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

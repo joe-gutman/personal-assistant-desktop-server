@@ -1,37 +1,36 @@
-# Personal Voice Assistant AI
+# Personal Life Assistant – Backend Server [WIP]
 
-## Description
-This assistant is a voice focused personal ai designed to help users with daily tasks, manage their life, and provide helpful information. The project currently focuses on natural language interaction using voice, with plans to expand into task management, scheduling, and personalized assistance in the future.
+Backend server for the Personal AI Voice Assistant.
 
+Handles all core functionality including task and schedule management, voice processing, and real-time communication with the frontend.
 
-## Current Features
-- **Voice Interaction**: Communicate with the AI using natural language through voice to text conversation.
-- **Natural Language Interaction**: Communicate with the AI using conversational language.
-- **Information Retrieval**: Provide answers to general questions and access useful resources.
-- **Contextual Awareness**: Improves responses based on context and previous interactions.
+## Overview
 
-## Technology Stack
-- **Programming Language**: Python
-- **LLM API**: Cohere
-- **Speech Recognition**: Deepgram
+This server powers the assistant’s capabilities by managing task data, schedule events, and handling voice interactions. It performs the heavy lifting such as speech-to-text, text-to-speech, and command interpretation.
 
-## Setup
-1. Install dependencies:
-    ``` pip install -r requirements.txt ```
+## Built With
+- Python 3.10+
+- Flask
+- OpenAI API
+- Marshmallow and SQLAlchemy
+  
+## Features
 
-2. [Any additional setup steps]
+- Task creation, editing, and prioritization
+- Calendar scheduling with daily, weekly, and monthly views
+- Voice input recognition and command processing
+- Text-to-speech generation
+- Local database storage
+- Real-time communication with the frontend client
 
-## Running Experiments
-[Instructions on how to run experiments or use the AI model]
+## Related Projects
 
-## Results
-[Summary of current results or link to results documentation]
+- [Personal Life Assistant – Client Desktop](https://github.com/joe-gutman/personal-assistant-client-desktop)
 
-## Future Goals
-- **Basic Scheduling**: Set basic reminders or alarms.
-- **Task Management**: Enable users to create, update, and track tasks seamlessly.
-- **Personalization**: Adapt to user habits and preferences for tailored assistance.
-- **Advanced Scheduling**: Integrate with calendars and manage complex schedules.
+## Installation
 
+**Coming Soon**
 
+## Status
 
+MVP under active development. Initial release will support basic task and schedule management with integrated voice input/output and live frontend communication.

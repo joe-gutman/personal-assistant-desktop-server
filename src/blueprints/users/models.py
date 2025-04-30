@@ -1,4 +1,4 @@
-from src.main import db
+from src.extensions import db
 from src.blueprints.chats.models import Chat
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
@@ -13,6 +13,20 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     chat_history = db.relationship(Chat, backref="user", lazy="dynamic")
+
+    @classmethod
+    def create_user(cls, data):
+        new_user = User(
+            username=data['username'], 
+            password=data['password'], 
+            email=data['email'])
+        db.session.add(new_user)
+        try:
+            db.session.commit()
+            return new_user, 201
+        except IntegrityError:
+            db.session.rollback()
+            return "Username or email already exists.", 400
 
     @staticmethod
     def get_all_users():

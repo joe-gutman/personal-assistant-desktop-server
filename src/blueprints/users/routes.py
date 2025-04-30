@@ -1,18 +1,18 @@
+from src.extensions import db
 from flask import Blueprint, request, jsonify
 from .models import User
 from .schemas import UserSchema
-from src.main import db
 
 user_bp = Blueprint('user', __name__)
 
 @user_bp.route("/", methods=["POST"])
 def create_user():
-    data = request.get_json()
-    user_data = UserSchema().load(data)  
-    user = User(**user_data)             
-    db.session.add(user)
-    db.session.commit()
-    return UserSchema().dump(user), 201
+    try:
+        response, status_code = User.create_user(request.json)
+        user_schema = UserSchema()
+        return jsonify(user_schema.dump(response)), status_code
+    except Exception as e:
+        return str(e), 500
 
 @user_bp.route("/", methods=["GET"])
 def get_users():

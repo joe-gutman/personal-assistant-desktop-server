@@ -1,6 +1,6 @@
 # Personal Life Assistant – Backend Server [WIP]
 
-Backend server for the Personal AI Voice Assistant.
+Backend server for the Personal AI Voice Assistant
 
 Handles all core functionality including task and schedule management, voice processing, and real-time communication with the frontend.
 
@@ -25,7 +25,7 @@ This server powers the assistant’s capabilities by managing task data, schedul
 
 ## Related Projects
 
-- [Personal Life Assistant – Client Desktop](https://github.com/joe-gutman/personal-assistant-client-desktop)
+- [Personal Life Assistant – Client Desktop](https://github.com/joe-gutman/personal-assistant-desktop-client)
 
 ## Installation
 

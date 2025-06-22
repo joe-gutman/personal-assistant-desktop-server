@@ -1,6 +1,6 @@
-from src.extensions import db
+from src.extensions.db import db
 from openai import OpenAI
-from flask import current_app
+from quart import current_app
 from src.utils.logger import logging
 import datetime
 

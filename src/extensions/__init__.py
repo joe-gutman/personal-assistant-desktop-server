@@ -1,2 +1,5 @@
-from .db import db, migrate
+from .db import create_db
 from .ai_client import AIClient
+
+def register_extensions(app):
+    create_db(app)

@@ -1,5 +1,5 @@
-from src.extensions import db
-from src.blueprints.chats.models import Chat
+from src.extensions.db import db
+from src.modules.chats.models import Chat
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 # import logging

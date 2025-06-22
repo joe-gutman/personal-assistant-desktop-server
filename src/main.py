@@ -1,24 +1,34 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask.cli import with_appcontext
-from sqlalchemy_utils import database_exists, create_database
+from quart import Quart, websocket
+from quart_sqlalchemy import SQLAlchemyConfig
+from quart_sqlalchemy.framework import QuartSQLAlchemy
+from quart.cli import with_appcontext
 from config import Config
 from dotenv import load_dotenv
-from src.blueprints import user_bp, chat_bp
-from src.extensions import db, migrate
+from src.modules import register_blueprints
+from src.modules import register_websockets
+from src.extensions import register_extensions
+from src.extensions.db import db
+
 import click
 import os
+import asyncio
 
 load_dotenv()
 
-
 def create_app():
-    app = Flask(__name__)
+    app = Quart(__name__)
     app.config.from_object(Config)
+    db.init_app(app)
+
+    # Now pass db to your modules
+    register_extensions(app)
+    register_blueprints(app)
+    register_websockets(app)
+
 
     register_extensions(app)
-
     register_blueprints(app)
+    register_websockets(app)
 
     @click.command("create-db")
     @with_appcontext
@@ -42,21 +52,11 @@ def create_app():
         except Exception as e:
             print(f"Failed to create tables: {e}")
 
-    app.cli.add_command(create_db)  # Register the command with Flask's CLI
+    app.cli.add_command(create_db)  # Register the command with Quart's CLI
 
     return app
-
-def register_extensions(app):
-    """Register Flask extensions."""
-    db.init_app(app)
-    migrate.init_app(app, db)
-
-def register_blueprints(app):
-    """Register Flask blueprints."""
-    app.register_blueprint(user_bp, url_prefix="/api/user")
-    app.register_blueprint(chat_bp, url_prefix="/api/chat")
 
 if __name__ == "__main__":
     app = create_app()
     print("DB_HOST:", os.getenv('DB_HOST'))
-    app.run(debug=True)
+    app.run(debug=False)

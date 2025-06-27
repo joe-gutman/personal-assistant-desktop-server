@@ -1,0 +1,5 @@
+# Bind to address/port (e.g., for WSL access)
+# bind = ["0.0.0.0:5000"]
+
+# Enable auto-reloading during development
+# reload = true

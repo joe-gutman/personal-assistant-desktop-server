@@ -4,13 +4,13 @@ chat_socket_bp = Blueprint("chat_socket", __name__)
 
 @chat_socket_bp.websocket("/ws/chat")
 async def chat_ws():
-    print("WebSocket connected for chat")
+    print("WebSocket connected: chat")
     try:
-        await websocket.accept()  # Explicit accept
+        await websocket.accept()
         while True:
-            data = await websocket.receive_json()
-            print(f"Received: {data}")
-            await websocket.send_json({"echo": data})
+            data = await websocket.receive()
+            print(f"[Chat] Received: {data}")
+            await websocket.send(data)
     except Exception as e:
-        print("WebSocket error:", e)
+        print("Chat socket error:", e)
         await websocket.close()

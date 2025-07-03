@@ -1,1 +1,1 @@
-from .sockets import audio_socket_bp
+from .socket import audio_socket_bp

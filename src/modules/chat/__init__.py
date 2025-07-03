@@ -1,1 +1,1 @@
-from .sockets import chat_socket_bp
+from .socket import chat_socket_bp

@@ -4,7 +4,7 @@ chat_socket_bp = Blueprint("chat_socket", __name__)
 
 @chat_socket_bp.websocket("/ws/chat")
 async def chat_ws():
-    print("WebSocket connected: chat")
+    print("WebSocket connected: CHAT")
     try:
         await websocket.accept()
         while True:

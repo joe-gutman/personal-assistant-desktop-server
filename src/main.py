@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+DEBUG = True
+
 from .modules import chat_socket_bp
 from .modules import audio_socket_bp
 

@@ -5,13 +5,13 @@ load_dotenv()
 
 DEBUG = True
 
-from .modules import chat_socket_bp
-from .modules import audio_socket_bp
+# Import websocket blueprints
+from .modules import input_socket_bp, output_socket_bp
 
 def create_app():
     app = Quart(__name__)
-    app.register_blueprint(audio_socket_bp)
-    app.register_blueprint(chat_socket_bp)
+    app.register_blueprint(input_socket_bp)
+    app.register_blueprint(output_socket_bp)
     return app
 
 if __name__ == '__main__':

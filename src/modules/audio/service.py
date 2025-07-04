@@ -1,5 +1,4 @@
 import json
-import asyncio
 import base64
 from src.extensions import STTClient
 

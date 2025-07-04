@@ -1,1 +1,0 @@
-from .socket import chat_socket_bp

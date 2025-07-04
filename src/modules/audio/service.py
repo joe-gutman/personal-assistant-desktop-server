@@ -15,7 +15,7 @@ async def handle_audio_stream(websocket):
             print("[Audio] WebSocket send error:", e)
 
     # Initialize the STT client with the callback
-    stt_client = STTClient(on_transcript=on_transcript, chunk_seconds=8)
+    stt_client = STTClient(on_transcript=on_transcript)
     transcribe_task = None
 
     try:
@@ -24,14 +24,15 @@ async def handle_audio_stream(websocket):
             status = message.get('status')
             audio_data = message.get('audio')
             if (status == "LISTENING"):
-                if not await stt_client.get_status():
+                if not stt_client.get_status():
                     await stt_client.start_listening()
                     print("[Audio] STT client started listening")
                 if audio_data:
+                    # print(f"[Audio] Received message (preview): {audio_data[:5]}, status: {status}")
                     audio_data = base64.b64decode(message.get('audio'))
                     stt_client.transcribe_audio(audio_data)
             elif (status == "STOPPED"): 
-                if stt_client.get_status():
+                if await stt_client.get_status():
                     await stt_client.stop_listening()
                     print("[Audio] STT client stopped listening")
             # print(f"[Audio] Received data: [{data[:5]}]...")

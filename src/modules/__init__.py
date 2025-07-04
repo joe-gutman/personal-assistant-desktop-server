@@ -1,1 +1,1 @@
-from .communication import input_socket_bp, output_socket_bp
+from .communication import client_stream_bp, server_stream_bp

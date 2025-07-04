@@ -1,37 +1,40 @@
 from quart import websocket, Blueprint
 from .service import communication_service
 
-input_socket_bp = Blueprint("input_socket", __name__)
-output_socket_bp = Blueprint("output_socket", __name__)
+client_stream_bp = Blueprint("client_stream", __name__)
+server_stream_bp = Blueprint("server_stream", __name__)
 
-@input_socket_bp.websocket("/ws/input")
+# Client stream only 
+
+@client_stream_bp.websocket("/ws/client")
 async def audio_ws():
-    print("WebSocket connected: INPUT WS")
+    print("WebSocket connected: CLIENT STREAM")
     await websocket.accept()
-    communication_service.register_input_socket(websocket)
+    communication_service.register_client_stream(websocket)
     
     try:
         while True:
             message = await websocket.receive()
-            print(f"[Audio] Received: {message}")
+            print(f"[CLIENT STREAM] Received: {message}")
             await communication_service.process_audio_message(message)
     except Exception as e:
-        print("[INPUT WS] Error:", e)
+        print("[CLIENT STREAM] Error:", e)
     finally:
-        await websocket.close(code=1000, reason="[INPUT WS] Stream closed")
+        await websocket.close(code=1000, reason="[CLIENT STREAM] Stream closed")
     
 
-@output_socket_bp.websocket("/ws/output")
+@server_stream_bp.websocket("/ws/server")
 async def output_ws():
-    print("WebSocket connected: OUTPUT WS")
+    print("WebSocket connected: SERVER STREAM")
     await websocket.accept()
+    communication_service.register_server_stream(websocket)
     
     try:
         while True:
             await websocket.receive()
     except Exception as e:
-        print("[OUTPUT WS] Error:", e)
+        print("[SERVER STREAM] Error:", e)
     finally:
-        await websocket.close(code=1000, reason="[OUTPUT WS] Stream closed")
+        await websocket.close(code=1000, reason="[SERVER STREAM] Stream closed")
         
         

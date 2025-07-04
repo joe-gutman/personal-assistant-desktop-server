@@ -13,17 +13,19 @@ chunk_counter = 0
 
 
 class STTClient:
-    def __init__(self, model_size="large", device="cuda", language="en", on_transcript=None, sample_rate=48000, chunk_seconds=3, overlap_seconds=1):
+    def __init__(self, model_size="large-v2", device="cuda", language="en", on_transcript=None, sample_rate=48000):
         self.model = WhisperModel(model_size, device=device)
         self.language = language
         self.on_transcript = on_transcript
         self.sample_rate = sample_rate
         self.audio_buffer = np.array([], dtype=np.int16) 
-        self.chunk_size = int(self.sample_rate * chunk_seconds) 
-        self.overlap_size = int(self.sample_rate * overlap_seconds)
         self.last_text = ""
-        self.listening = "STOPPED"
+        self.listening = False
 
+    @property
+    def status(self):
+        return self.listening
+    
     def save_audio(self, audio_sample, sample_rate, chunk_counter,):
         filename = os.path.join(save_dir, f'audio_{chunk_counter}.wav')
         sf.write(filename, audio_sample, sample_rate, subtype='PCM_16')
@@ -47,10 +49,10 @@ class STTClient:
 
         audio_np = self.audio_buffer.astype(np.float32) / 32768.0
         audio_np_16k = self.resample_audio(audio_np, orig_sr=self.sample_rate, target_sr=16000)
-        self.save_audio(audio_np_16k, 16000, chunk_counter)
+        # self.save_audio(audio_np_16k, 16000, chunk_counter)
         chunk_counter += 1
 
-        segments, _ = self.model.transcribe(audio_np, language=self.language)
+        segments, _ = self.model.transcribe(audio_np_16k, language=self.language)
         text = "".join([seg.text for seg in segments]).strip()
         print(f"[AUDIO] Raw transcribed text: {text}")
         if self.on_transcript and text:
@@ -66,8 +68,5 @@ class STTClient:
         await self.process_buffer()
         self.audio_buffer = np.array([], dtype=np.int16)
     
-    async def  get_status(self):
-        return self.listening
-
     def stop(self):
         self.audio_buffer.clear()

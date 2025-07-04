@@ -24,7 +24,7 @@ async def handle_audio_stream(websocket):
             status = message.get('status')
             audio_data = message.get('audio')
             if (status == "LISTENING"):
-                if not stt_client.get_status():
+                if not stt_client.status:
                     await stt_client.start_listening()
                     print("[Audio] STT client started listening")
                 if audio_data:
@@ -32,7 +32,7 @@ async def handle_audio_stream(websocket):
                     audio_data = base64.b64decode(message.get('audio'))
                     stt_client.transcribe_audio(audio_data)
             elif (status == "STOPPED"): 
-                if await stt_client.get_status():
+                if stt_client.status:
                     await stt_client.stop_listening()
                     print("[Audio] STT client stopped listening")
             # print(f"[Audio] Received data: [{data[:5]}]...")

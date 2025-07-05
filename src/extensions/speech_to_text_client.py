@@ -1,7 +1,5 @@
 import os
-import difflib
 import numpy as np
-import asyncio
 import soundfile as sf
 import logging
 from faster_whisper import WhisperModel

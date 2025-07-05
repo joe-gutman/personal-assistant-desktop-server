@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/amy/medium
+HostUrl=https://huggingface.co/api/resolve-cache/models/rhasspy/piper-voices/375a0fe641dea077c2a47b4e9a056d6da521eed3/en%2Fen_US%2Famy%2Fmedium%2Fen_US-amy-medium.onnx.json?download=true&etag=%225a1e0a2d94d3719de29a4771aa0e6c116552445f%22

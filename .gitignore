@@ -1,3 +1,6 @@
+#extensions/tools
+piper/
+
 # Virtual environment
 venv/
 

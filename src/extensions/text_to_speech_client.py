@@ -1,15 +1,17 @@
 import subprocess
 import os
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
 class TTSClient:
-    def __init__(self, voice_name="en_US_amy_medium", on_speach=None):
+    def __init__(self, voice_name="en_US-amy-medium", on_speach=None):
         self.piper_path = "./piper/piper"
-        self.voice_path = "./piper/voices/" + self.voice + ".onnx"
+        self.voice_path = "./piper/voices/" + voice_name + ".onnx"
         self.process = None
         self.on_speach = on_speach
+        self.chunk_size = 4096
         self.start_streaming()
         
     def start_streaming(self):
@@ -20,38 +22,35 @@ class TTSClient:
             logger.error(f"Voice file not found at {self.voice_path}. Please check the path.")
             return
         
-        logger.info(f"Starting Piper TTS with voice '{self.voice_path.split('/')[-1]}' in streaming mode.")
+        logger.info(f"Starting Piper TTS with voice '{self.voice_path.split('/')[-1]}' in raw pcm streaming mode.")
         self.process = subprocess.Popen(
-            [self.piper_path, "--model", self.voice_path, "--stream"],
+            [self.piper_path, "--model", self.voice_path, "--output-raw"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            buffsize=0
+            bufsize=0
         )
         logger.info("Piper streaming mode started.")
         
-    def speak(self, text):
+    async def speak(self, text):
         if not self.process:
             logger.error("TTS process is not running. Please start the TTS client first.")
             return
-        
+
         try:
             logger.info(f"Sending text to Piper: {text}")
-            self.process.stdin.write((text + "\n").encode('utf-8'))
+            self.process.stdin.write((text.strip() + "\n").encode('utf-8'))
             self.process.stdin.flush()
-        except Exception as e:
-            logger.error(f"Error sending text to Piper: {e}")
             
-        self.process.stdin.write((text.strip() + "\n").encode('utf-8'))
-        self.process.stdin.flush()  
-        
-        raw_audio = self.process.stdout.read(22050 * 2 * 2)  # ~2s @ 22050Hz, 16-bit
-        
-        if self.on_speach:
-            try:
-                self.on_speach(raw_audio)
-            except Exception as e:
-                logger.error(f"Error in on_speach callback: {e}")
+            while True:
+                chunk = await asyncio.to_thread(self.process.stdout.read, self.chunk_size)
+                if not chunk:
+                    break
+                if self.on_speach:
+                    await self.on_speach(chunk)
+
+        except Exception as e:
+            logger.error(f"Error speaking with Piper: {e}")
 
     def stop(self):
         if self.process:

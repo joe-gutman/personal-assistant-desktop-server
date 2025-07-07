@@ -1,1 +1,1 @@
-from .sockets import client_stream_bp, server_stream_bp
+from .sockets import websocket_bp

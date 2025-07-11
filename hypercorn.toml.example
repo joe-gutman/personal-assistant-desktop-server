@@ -1,5 +1,17 @@
-# Bind to address/port (e.g., for WSL access)
+# Bind to all interfaces for WSL or Docker use
 # bind = ["0.0.0.0:5000"]
 
-# Enable auto-reloading during development
+# Enable live reload on code changes (useful during development)
 # reload = true
+
+# Set the number of worker processes (default: 1)
+# workers = 1
+
+# Log level (can be: debug, info, warning, error, critical)
+# loglevel = "debug"
+
+# Timeout for graceful shutdowns
+# graceful_timeout = 10
+
+# Enable access log (prints each request)
+# accesslog = "-"

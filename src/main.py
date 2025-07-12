@@ -11,8 +11,6 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 
-assert os.getenv("HUGGINGFACE_TOKEN"), "HUGGINGFACE_TOKEN not loaded from .env!"
-
 def create_app():
     app = Quart(__name__)
     app.register_blueprint(websocket_bp)

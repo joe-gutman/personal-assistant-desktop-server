@@ -1,6 +1,7 @@
 # Models
-models/voices/*
-models/llms/*
+models/voice/*
+models/llm/*
+models/stt/*
 
 # Extensions/tools
 piper/

@@ -1,4 +1,5 @@
 import os
+import json
 import numpy as np
 import soundfile as sf
 import logging
@@ -14,16 +15,47 @@ chunk_counter = 0
 
 
 class STTClient:
-    def __init__(self, model_size="large-v2", device="cuda", language="en", on_transcript=None, sample_rate=48000):
-        self.model = WhisperModel(model_size, device=device)
+    def __init__(self, model="large-v2", device="cuda", language="en", on_transcript=None, sample_rate=48000):
+        self.model_name = model
+        self.device = device
         self.language = language
         self.on_transcript = on_transcript
         self.sample_rate = sample_rate
         self.audio_buffer = np.array([], dtype=np.int16) 
         self.last_text = ""
         self.listening = False
+        self.model = None
+        self.load_model()
 
-        logger.debug(f"STTClient initialized with model '{model_size}' on device '{device}' for language '{language}'.")
+    def load_model(self):
+        try:
+            config_path = os.path.join("config", "models.json")
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+
+            stt_config = config.get("stt", {})
+            selected_model = stt_config.get(self.model_name)
+
+            if not selected_model:
+                logger.error(f"Model '{self.model_name}' not found in config.")
+                return
+
+            model_foldername = selected_model.get("foldername")
+
+            if not model_foldername:
+                logger.error(f"No foldername specified for model '{self.model_name}'.")
+                return
+
+            model_path = os.path.join("models", "stt", model_foldername)
+            self.model = WhisperModel(model_path, device=self.device)
+            logger.info(f"Loaded STT model '{self.model_name}' ({model_foldername}) on device '{self.device}'")
+
+        except FileNotFoundError:
+            logger.error(f"STT configuration file not found: {config_path}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON from STT configuration file: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error loading STT model: {e}")
 
     @property
     def status(self):

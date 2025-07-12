@@ -3,7 +3,6 @@ import torch
 import logging
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, GenerationConfig
 from transformers.utils import logging as hf_logging
-from huggingface_hub import login
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +47,14 @@ class AIModel:
         self.pipe = None
 
     def load(self):
-        login(os.getenv("HUGGINGFACE_TOKEN"))
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        logger.info(f"Loading model from local path: {self.model_name}")
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name,
+            local_files_only=True
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
+            local_files_only=True,
             load_in_8bit=True,
             device_map="auto",
             torch_dtype=torch.float16,
@@ -59,7 +62,8 @@ class AIModel:
         self.pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer)
 
 class BaseAI:
-    def __init__(self, model_name="mistralai/Mistral-7B-Instruct-v0.1"):
+    def __init__(self, model_name="models/llm/Mistral-7B-Instruct-v0.1"):
+        self.model_name = os.path.abspath(model_name)
         logger.info("Initializing BaseAI...")
         self.model = AIModel(model_name)
         self.model.load()

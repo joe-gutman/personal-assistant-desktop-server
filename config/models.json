@@ -1,0 +1,64 @@
+{
+  "llms": {
+    "mistral-v0.1": {
+      "foldername": "Mistral-7B-Instruct-v0.1"
+    },
+    "mistral-v0.2": {
+      "foldername": "Mistral-7B-Instruct-v0.2"
+    },
+    "mistral-7b-v0.3": {
+      "foldername": "Mistral-7B-Instruct-v0.3"
+    }
+  },
+  "stt": {
+    "large-v2": {
+      "foldername": "faster-whisper-large-v2"
+    }
+  },
+  "voices": {
+    "amy": {
+      "filename": "en_US-amy-medium",
+      "speaker_id": null
+    },
+    "sandy": {
+      "filename": "en_US-hfc_female-medium",
+      "speaker_id": null
+    },
+    "tom": {
+      "filename": "en_US-hfc_male-medium",
+      "speaker_id": null
+    },
+    "wendy": {
+      "filename": "en_US-ljspeech-high",
+      "speaker_id": null
+    },
+    "emma": {
+      "filename": "en_US-libritts_r-medium",
+      "speaker_id": 18
+    },
+    "olivia": {
+      "filename": "en_US-libritts_r-medium",
+      "speaker_id": 15
+    },
+    "mark": {
+      "filename": "en_US-libritts_r-medium",
+      "speaker_id": 3
+    },
+    "john": {
+      "filename": "en_US-libritts_r-medium",
+      "speaker_id": 19
+    },
+    "cori": {
+      "filename": "en_GB-cori-high",
+      "speaker_id": null
+    },
+    "prudence": {
+      "filename": "en_GB-semaine-medium",
+      "speaker_id": 0
+    },
+    "poppy": {
+      "filename": "en_GB-semaine-medium",
+      "speaker_id": 4
+    }
+  }
+}

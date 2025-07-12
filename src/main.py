@@ -1,13 +1,14 @@
-import logging
 import os
-from quart import Quart
 from dotenv import load_dotenv
 
-from .modules import websocket_bp
 from .extensions.logging_config import setup_logging
+setup_logging()
+
+import logging
+from quart import Quart
+from .modules import websocket_bp
 
 load_dotenv()
-setup_logging()
 
 logger = logging.getLogger(__name__)
 

@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 class TTSClient:
     def __init__(self, voice_name="emma", on_speach=None, timeout=3):
         self.voice_name = voice_name
+        self.voice_path = None
+        self.speaker_id = None
         self.on_speach = on_speach
         self.timeout = timeout
         self.voice = None
@@ -17,9 +19,11 @@ class TTSClient:
     def load_voice(self):
         try:
             config_path = os.path.join("config", "models.json")
+            abs_config_path = os.path.abspath(config_path)
+            logger.debug(f"Trying to open config at: {abs_config_path}")
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
-
+                
             voices_config = config.get("voices", {})
             selected_voice = voices_config.get(self.voice_name)
 
@@ -33,16 +37,22 @@ class TTSClient:
             if not voice_filename:
                 logger.error(f"No filename specified for voice '{self.voice_name}'.")
                 return
+            else:
+                base_dir = os.path.join("models", "voice")
+                self.voice_path = os.path.join(base_dir, f"{voice_filename}.onnx")
+                self.config_path = os.path.join(base_dir, f"{voice_filename}.onnx.json")
+            
+            if not speaker_id:
+                logger.error(f"No speaker ID specified for voice '{self.voice_name}'.")
+                return
+            else: 
+                self.speaker_id = speaker_id
 
-            base_dir = os.path.dirname("models/voice")
-            model_path = os.path.join(base_dir, f"{voice_filename}.onnx")
-            config_path = os.path.join(base_dir, f"{voice_filename}.onnx.json")
+            self.voice = PiperVoice.load(self.voice_path, self.config_path)
+            logger.info(f"Loaded Piper voice '{self.voice_name}' with speaker ID: {self.speaker_id}")
 
-            self.voice = PiperVoice.load(model_path, config_path, speaker_id=speaker_id)
-            logger.info(f"Loaded Piper voice '{self.voice_name}' ({voice_filename}) with speaker ID: {speaker_id}")
-
-        except FileNotFoundError:
-            logger.error(f"Voice configuration file not found: {config_path}")
+        except FileNotFoundError as e:
+            logger.error(f"File not found: {e.filename}")
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON from voice configuration file: {e}")
         except Exception as e:

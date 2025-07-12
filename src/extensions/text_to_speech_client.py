@@ -1,64 +1,66 @@
-import subprocess
-import os
 import logging
 import asyncio
+import os
+import json
+from piper.voice import PiperVoice
 
 logger = logging.getLogger(__name__)
 
 class TTSClient:
-    def __init__(self, voice_name="en_US-amy-medium", on_speach=None):
-        self.piper_path = "./piper/piper"
-        self.voice_path = "./piper/voices/" + voice_name + ".onnx"
-        self.process = None
+    def __init__(self, voice_name="jarvis-high", on_speach=None, timeout=3):
+        self.voice_name = voice_name
         self.on_speach = on_speach
-        self.chunk_size = 4096
-        self.start_streaming()
-        
-    def start_streaming(self):
-        if not os.path.isfile(self.piper_path):
-            logger.error(f"Piper executable not found at {self.piper_path}. Please check the path.")
-            return
-        if not os.path.isfile(self.voice_path):
-            logger.error(f"Voice file not found at {self.voice_path}. Please check the path.")
-            return
-        
-        logger.info(f"Starting Piper TTS with voice '{self.voice_path.split('/')[-1]}' in raw pcm streaming mode.")
-        self.process = subprocess.Popen(
-            [self.piper_path, "--model", self.voice_path, "--output-raw"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=0
-        )
-        logger.info("Piper streaming mode started.")
-        
+        self.timeout = timeout
+        self.voice = None
+        self.load_voice()
+
+    def load_voice(self):
+        try:
+            config_path = os.path.join("config", "voices.json")
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.voices = json.load(f)
+                
+            try:
+                for name, alias in self.voices.items():
+                    if self.voice_name == alias:
+                        self.voice_name = name
+                        break
+                model_path = os.path.join("voices", self.voice_name + ".onnx")
+                config_path = os.path.join("voices", self.voice_name + ".onnx.json")
+                self.voice = PiperVoice.load(model_path, config_path)
+                logger.info(f"Loaded Piper voice: {self.voice_name}")
+            except Exception as e:
+                logger.error(f"Failed to load Piper voice: {e}")
+        except FileNotFoundError:
+            logger.error(f"Voice configuration file not found: {config_path}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON from voice configuration file: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error loading voice: {e}")
+
     async def speak(self, text):
-        if not self.process:
-            logger.error("TTS process is not running. Please start the TTS client first.")
+
+        if not self.voice:
+            logger.error("Voice model not loaded.")
             return
+
+        logger.info(f"Synthesizing and streaming: {text}")
+
+        def generate_chunks():
+            # This is a blocking generator
+            return list(self.voice.synthesize_stream_raw(text))
 
         try:
-            logger.info(f"Sending text to Piper: {text}")
-            self.process.stdin.write((text.strip() + "\n").encode('utf-8'))
-            self.process.stdin.flush()
-            
-            while True:
-                chunk = await asyncio.to_thread(self.process.stdout.read, self.chunk_size)
-                if not chunk:
-                    break
+            chunks = await asyncio.to_thread(generate_chunks)
+            for chunk in chunks:
                 if self.on_speach:
-                    await self.on_speach(chunk)
-
+                    if asyncio.iscoroutinefunction(self.on_speach):
+                        await self.on_speach(chunk)
+                    else:
+                        self.on_speach(chunk)
         except Exception as e:
-            logger.error(f"Error speaking with Piper: {e}")
+            logger.error(f"Error during speech synthesis: {e}")
 
     def stop(self):
-        if self.process:
-            logger.info("Stopping Piper TTS process.")
-            self.process.terminate()
-            self.process.wait()
-            self.process = None
-            logger.info("Piper TTS process stopped.")
-        else:
-            logger.warning("No Piper TTS process to stop.")
-            
+        # No process to stop; included for API compatibility
+        logger.info("TTSClient stopped (no process to terminate).")

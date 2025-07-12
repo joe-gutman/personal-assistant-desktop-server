@@ -1507,6 +1507,29 @@ typing = ["typing-extensions ; python_version < \"3.10\""]
 xmp = ["defusedxml"]
 
 [[package]]
+name = "piper-tts"
+version = "1.3.0"
+description = "Fast and local neural text-to-speech engine"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "piper_tts-1.3.0-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:0af0c90aeddf762555ed940de1ac576acbefb3623e6d5ca4fb1a70359ee7e65d"},
+    {file = "piper_tts-1.3.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:810c91a084d335d32b42928b1ef69d6480cf7e3a5a8b15eff98edd2ef55f2791"},
+    {file = "piper_tts-1.3.0-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:8d39f85c3f4b6ade512976849579344fc72595ec613f374dbcf8521716398907"},
+    {file = "piper_tts-1.3.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:234c25474655b26f3418b84522c815c43e9b1bc8a1fdb13c2b28514290c165f0"},
+    {file = "piper_tts-1.3.0-cp39-abi3-win_amd64.whl", hash = "sha256:dc6b5be4e15f3c0f4a6067b515bc6202ddf3e2b0c6cbd6c8bdeccab2453c89c7"},
+]
+
+[package.dependencies]
+onnxruntime = ">=1,<2"
+
+[package.extras]
+dev = ["black (==24.8.0)", "build (==1.2.2)", "cmake (>=3.18,<4)", "flake8 (==7.1.1)", "mypy (==1.14.0)", "ninja (>=1,<2)", "pylint (==3.2.7)", "pytest (==8.3.4)", "scikit-build (<1)"]
+http = ["flask (>=3,<4)"]
+train = ["cython (>=3,<4)", "jsonargparse[signatures] (>=4.27.7)", "librosa (<1)", "lightning (>=2,<3)", "onnx (>=1,<2)", "pathvalidate (>=3,<4)", "pysilero-vad (>=2.1,<3)", "tensorboard (>=2,<3)", "tensorboardX (>=2,<3)", "torch (>=2,<3)"]
+
+[[package]]
 name = "priority"
 version = "2.0.0"
 description = "A pure-Python implementation of the HTTP/2 priority tree"
@@ -2698,4 +2721,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "3c39732ab94f5fd51a0dc6a5c3ff0ca0474ae48616b3c09a58f2703218637766"
+content-hash = "3fbbf821929d380525a6d0106cbe7e8709496256609737b377833ddd673d67b1"

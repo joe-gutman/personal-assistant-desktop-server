@@ -3,6 +3,11 @@ models/voice/*
 models/llm/*
 models/stt/*
 
+#Logs
+logs/*
+!logs/audio_logs/
+logs/audio_logs/**
+
 # Extensions/tools
 piper/
 

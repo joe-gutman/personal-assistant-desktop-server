@@ -1,4 +1,5 @@
 import logging
+import threading
 import asyncio
 import os
 import json
@@ -59,25 +60,16 @@ class TTSClient:
             logger.error(f"Unexpected error loading voice: {e}")
 
     async def speak(self, text):
-
         if not self.voice:
             logger.error("Voice model not loaded.")
             return
 
         logger.info(f"Synthesizing and streaming: {text}")
 
-        def generate_chunks():
-            # This is a blocking generator
-            return list(self.voice.synthesize_stream_raw(text))
-
         try:
-            chunks = await asyncio.to_thread(generate_chunks)
-            for chunk in chunks:
+            for chunk in self.voice.synthesize(text):
                 if self.on_speach:
-                    if asyncio.iscoroutinefunction(self.on_speach):
-                        await self.on_speach(chunk)
-                    else:
-                        self.on_speach(chunk)
+                    await self.on_speach(chunk)
         except Exception as e:
             logger.error(f"Error during speech synthesis: {e}")
 

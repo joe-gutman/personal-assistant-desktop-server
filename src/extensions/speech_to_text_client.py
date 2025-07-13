@@ -7,12 +7,9 @@ from faster_whisper import WhisperModel
 from scipy.signal import resample_poly
 
 logger = logging.getLogger(__name__)
-
-save_dir = 'audio_logs'
-os.makedirs(save_dir, exist_ok=True)
+save_dir = os.path.join("logs", "audio")
 
 chunk_counter = 0
-
 
 class STTClient:
     def __init__(self, model="large-v2", device="cuda", language="en", on_transcript=None, sample_rate=48000):

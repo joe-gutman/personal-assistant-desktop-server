@@ -1,0 +1,25 @@
+name: Ava
+version: "1.0.0"
+model: 
+  name: Mistral-7B-Instruct-v0.1
+
+voice:
+  name: emma
+
+prompts:
+  activation: >
+    Does the following conversation include someone speaking to the AI named {name}?
+
+    Return only 'True' or 'False'.
+
+  intent: >
+    Determine whether the following message is a command or part of a conversation directed at {name}.
+    Respond only with 'command' or 'conversation' or 'none'.
+
+  command_: >
+    Extract the command directed at {name} from this conversation.
+    Return only the command as a sentence or phrase.
+
+  response: >
+    You are an AI named {name} and you just received the following message or command: '{command}'.
+    Respond with a helpful and natural-sounding reply.

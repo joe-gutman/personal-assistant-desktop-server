@@ -36,6 +36,10 @@
       "filename": "en_US-libritts_r-medium",
       "speaker_id": 18
     },
+    "mia": {
+      "filename": "en_US-libritts_r-medium",
+      "speaker_id": 11
+    },
     "olivia": {
       "filename": "en_US-libritts_r-medium",
       "speaker_id": 15

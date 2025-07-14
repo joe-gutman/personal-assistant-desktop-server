@@ -1,20 +1,27 @@
+
 import os
 import torch
 import logging
+import json
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, GenerationConfig
 from transformers.utils import logging as hf_logging
 
 logger = logging.getLogger(__name__)
 
+
 class AIClient:
-    def __init__(self):
+    def __init__(self, name, activation_prompt, intent_prompt, command_prompt, response_prompt):
         logger.info("Initializing AI Client...")
+        self.name = name
         self.base_ai = BaseAI()
 
-        self.listener = ListenerAI(self.base_ai)
-        self.intent_classifier = IntentClassifierAI(self.base_ai)
-        self.command_extractor = CommandExtractorAI(self.base_ai)
-        self.responder = ResponderAI(self.base_ai)
+        self.listener = ListenerAI(self.base_ai, activation_prompt, self.name)
+        self.intent = IntentAI(self.base_ai, intent_prompt, self.name)
+        self.command = CommandAI(self.base_ai, command_prompt, self.name)
+        self.responder = ResponderAI(self.base_ai, response_prompt, self.name)
+        
+    def update_settings(self, config):
+        
 
     def handle_user_input(self, user_message: str) -> str:
         logger.debug(f"AIClient received input: {user_message!r}")
@@ -27,7 +34,7 @@ class AIClient:
             intent = self.intent_classifier.classify_intent(message)
             if intent == "command":
                 # logger.info("Command detected.")
-                # command = self.command_extractor.extract_command(message)
+                # command = self.command.extract_command(message)
                 # if command:
                 #     logger.info(f"Command extracted: {command}")
                 #     return self.responder.generate_reply(command)
@@ -93,78 +100,65 @@ class BaseAI:
 
 
 class ListenerAI:
-    def __init__(self, base: BaseAI):
+    def __init__(self, base: BaseAI, prompt_template, name):
         self.base = base
+        self.prompt_template = prompt_template
+        self.name = name
 
     def detect_activation(self, messages: list[str]) -> bool:
         if not isinstance(messages, list):
             raise TypeError("Expected a list of strings for `messages`.")
-    
-        prompt = (
-            "Does the following conversation include someone speaking to the AI named Ava?\n\n"
-            "Return only 'True' or 'False'.\n"
-            f"{''.join(messages)}\n\n"
-            "Answer:"
-        )
-        
+        conversation = "\n".join(messages)
+        prompt = self.prompt_template.format(name=self.name, conversation=conversation) + "\nAnswer:"
         response = self.base.get_response(
             prompt,
             max_new_tokens=5,
             do_sample=False
         ).lower()
-        
         return "true" in response.lower().strip()
 
 
-class IntentClassifierAI:
-    def __init__(self, base: BaseAI):
+class IntentAI:
+    def __init__(self, base: BaseAI, prompt_template, name):
         self.base = base
+        self.prompt_template = prompt_template
+        self.name = name
 
     def classify_intent(self, messages: list[str]) -> str:
-        prompt = (
-            "Determine whether the following message is a command or part of a conversation directed at Ava. "
-            "Respond only with 'command' or 'conversation' or 'none'.\n\n"
-            + "\n".join(messages) +
-            "\n\nIntent:"
-        )
-        
+        conversation = "\n".join(messages)
+        prompt = self.prompt_template.format(name=self.name, conversation=conversation) + "\nIntent:"
         response = self.base.get_response(
             prompt,
             max_new_tokens=10,
             do_sample=False
         ).lower()
-        
         return response.lower().strip()
     
-class CommandExtractorAI:
-    def __init__(self, base: BaseAI):
+class CommandAI:
+    def __init__(self, base: BaseAI, prompt_template, name):
         self.base = base
+        self.prompt_template = prompt_template
+        self.name = name
 
     def extract_command(self, messages: list[str]) -> str:
-        prompt = (
-            "Extract the command directed at Ava from this conversation. "
-            "Return only the command as a sentence or phrase.\n\n" + "\n".join(messages)
-        )
-    
+        conversation = "\n".join(messages)
+        prompt = self.prompt_template.format(name=self.name, conversation=conversation)
         response = self.base.get_response(
             prompt,
             max_new_tokens=50,
             do_sample=False,
         ).strip()
-        
         return response
 
 
 class ResponderAI:
-    def __init__(self, base: BaseAI):
+    def __init__(self, base: BaseAI, prompt_template, name):
         self.base = base
+        self.prompt_template = prompt_template
+        self.name = name
 
     def generate_reply(self, command: str) -> str:
-        prompt = (
-            f"The AI named Ava (You) received this command: '{command}'. "
-            "Respond with a helpful and natural-sounding reply."
-        )
-        
+        prompt = self.prompt_template.format(name=self.name, command=command)
         response = self.base.get_response(
             prompt,
             max_new_tokens=100,
@@ -174,7 +168,6 @@ class ResponderAI:
             top_k=50,
             repetition_penalty=1.2,
         ).strip()
-        
         return response
 
 

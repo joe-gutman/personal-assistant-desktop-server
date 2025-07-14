@@ -8,25 +8,19 @@ from piper.voice import PiperVoice
 logger = logging.getLogger(__name__)
 
 class TTSClient:
-    def __init__(self, voice_name="emma", on_speach=None, timeout=3):
+    def __init__(self, voice_name="emma", on_speach=None, timeout=3, voices_config=None):
         self.voice_name = voice_name
         self.voice_path = None
         self.speaker_id = None
         self.on_speach = on_speach
         self.timeout = timeout
         self.voice = None
+        self.voices_config = voices_config or {}
         self.load_voice()
 
     def load_voice(self):
         try:
-            config_path = os.path.join("config", "models.json")
-            abs_config_path = os.path.abspath(config_path)
-            logger.debug(f"Trying to open config at: {abs_config_path}")
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = json.load(f)
-                
-            voices_config = config.get("voices", {})
-            selected_voice = voices_config.get(self.voice_name)
+            selected_voice = self.voices_config.get(self.voice_name)
 
             if not selected_voice:
                 logger.error(f"Voice '{self.voice_name}' not found in config.")
@@ -52,10 +46,6 @@ class TTSClient:
             self.voice = PiperVoice.load(self.voice_path, self.config_path)
             logger.info(f"Loaded Piper voice '{self.voice_name}' with speaker ID: {self.speaker_id}")
 
-        except FileNotFoundError as e:
-            logger.error(f"File not found: {e.filename}")
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON from voice configuration file: {e}")
         except Exception as e:
             logger.error(f"Unexpected error loading voice: {e}")
 
@@ -67,9 +57,14 @@ class TTSClient:
         logger.info(f"Synthesizing and streaming: {text}")
 
         try:
+            chunk_count = 0
             for chunk in self.voice.synthesize(text):
+                chunk_count += 1
+                logger.debug(f"Processing chunk #{chunk_count}")
                 if self.on_speach:
                     await self.on_speach(chunk)
+                logger.debug(f"Finished processing chunk #{chunk_count}")
+            logger.info(f"Completed synthesis, total chunks: {chunk_count}")
         except Exception as e:
             logger.error(f"Error during speech synthesis: {e}")
 

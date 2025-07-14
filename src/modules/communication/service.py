@@ -11,9 +11,24 @@ class CommunicationService:
     def __init__(self):
         self.ws = None
 
-        self.ai = AIClient()
-        self.stt = STTClient(on_transcript=self.on_transcript)
-        self.tts = TTSClient(on_speach=self.on_speach)  # Placeholder for TTSClient
+        # Load configs once
+        with open("config/ai.json", "r", encoding="utf-8") as f:
+            ai_config = json.load(f)
+        with open("config/models.json", "r", encoding="utf-8") as f:
+            models_config = json.load(f)
+
+        prompts = ai_config["prompts"]
+        self.ai = AIClient(
+            name=ai_config.get("name", "Ava"),
+            activation_prompt=prompts["activation"],
+            intent_prompt=prompts["intent"],
+            command_prompt=prompts["command"],
+            response_prompt=prompts["response"]
+        )
+        self.stt = STTClient(on_transcript=self.on_transcript)  # You can pass config if needed
+        # Pass voice config section to TTSClient
+        voice_name = ai_config.get("voice", {}).get("name", "emma")
+        self.tts = TTSClient(voice_name=voice_name, on_speach=self.on_speach, voices_config=models_config.get("voices", {}))
 
         logger.debug("CommunicationService initialized.")
 
@@ -68,27 +83,35 @@ class CommunicationService:
             return
 
         try:
-            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+            logger.debug(f"Processing audio chunk, type: {type(audio_data)}")
+            audio_bytes = audio_data.audio_int16_bytes
             
-            response = Message(
-                source=Source.SERVER,
-                type=MessageType.AUDIO,
-                source_id=None,
-                target_id=None,
-                timestamp=datetime.now().isoformat(), 
-                content=AudioContent(
-                    status=AudioStatus.SPEAKING,
-                    audio=audio_base64
+            # Split large audio chunks into smaller pieces (e.g., 4KB chunks)
+            chunk_size = 4096  # 4KB chunks
+            for i in range(0, len(audio_bytes), chunk_size):
+                chunk = audio_bytes[i:i + chunk_size]
+                audio_base64 = base64.b64encode(chunk).decode('utf-8')
+                
+                response = Message(
+                    source=Source.SERVER,
+                    type=MessageType.AUDIO,
+                    source_id=None,
+                    target_id=None,
+                    timestamp=datetime.now().isoformat(), 
+                    content=AudioContent(
+                        status=AudioStatus.SPEAKING,
+                        audio=audio_base64
+                    )
                 )
-            )
-            
-            if Message.model_validate(response):
-                debug_msg = response.model_dump()
-                debug_msg["content"]["audio"] = debug_msg["content"]["audio"][:10] + "..."
-                logger.debug("Sending TTS audio chunk: " + str(debug_msg))
-                await self.ws.send(response.model_dump_json())
-            else:
-                logger.error("Invalid message schema.")
+                
+                if Message.model_validate(response):
+                    debug_msg = response.model_dump()
+                    debug_msg["content"]["audio"] = debug_msg["content"]["audio"][:10] + "..."
+                    logger.debug(f"Sending TTS audio chunk {i//chunk_size + 1}: " + str(debug_msg))
+                    await self.ws.send(response.model_dump_json())
+                    logger.debug(f"Successfully sent audio chunk {i//chunk_size + 1}")
+                else:
+                    logger.error("Invalid message schema.")
         except Exception as e:
             logger.error(f"WebSocket send error: {e}", exc_info=True)
 

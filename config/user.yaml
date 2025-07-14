@@ -1,0 +1,7 @@
+name: Joe
+preferences:
+  language: en
+  units: metric
+  timezone: PST
+settings:
+  notifications_enabled: true

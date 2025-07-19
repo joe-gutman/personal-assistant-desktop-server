@@ -144,7 +144,6 @@ class TTS:
                     await self.on_speech(message)             
         else:
             sample_rate = self.voice.config.sample_rate
-            start_time = time.time()
             
             messages = []
 
@@ -159,33 +158,40 @@ class TTS:
                 if voice_name != self.voice_name:
                     task_voice = self._load_voice(voice_name, speaker_id)
 
-                if idx > 1:
-                    print()
-                    
                 word_count = len(text.split())
                 wpm = 180
                 expected_seconds = (word_count / wpm) * 60 / speed
+
+                if word_count == 0:
+                    logger.warning(f"Skipping input {idx} — empty or whitespace-only text.")
+                    continue
 
                 progress_bar = tqdm(
                     total=expected_seconds,
                     unit='s',
                     desc=f"Processing {idx}/{len(inputs)}",
                     smoothing=0.3,
+                    dynamic_ncols=True,
+                    leave=True,
                     bar_format='{l_bar}{bar}| {n:.0f}/{total:.0f} [{elapsed}<{remaining}]'
                 )
-
                 for chunk in self._generate_speech(text, speed=speed, voice=task_voice, speaker_id=speaker_id):
                     if chunk is None:
                         continue
                     full_audio.extend(chunk.audio_int16_bytes)
                     chunk_duration = len(chunk.audio_int16_bytes) / (2 * sample_rate)
                     try:
-                        progress_bar.update(chunk_duration)
+                        if progress_bar.n + chunk_duration <= progress_bar.total:
+                            progress_bar.update(chunk_duration)
+                        else:
+                            # Clamp to finish cleanly and avoid overrun
+                            progress_bar.update(progress_bar.total - progress_bar.n)
                     except TypeError:
                         pass
-                
+                    
                 progress_bar.close()
-                
+
+
                 messages.append(Message(
                     speed=speed,
                     audio=bytes(full_audio),
@@ -193,8 +199,6 @@ class TTS:
                     voice=voice_name,
                     speaker_id=speaker_id
                 ))
-
-            end_time = time.time()
         return messages
         
         

@@ -10,6 +10,7 @@ class Source(str, Enum):
 
 class MessageType(str, Enum):
     AUDIO = "AUDIO"
+    TRANSCRIPT = "TRANSCRIPT"
     CHAT = "CHAT"
 
 class AudioStatus(str, Enum):

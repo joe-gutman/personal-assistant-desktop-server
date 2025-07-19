@@ -11,7 +11,7 @@ save_dir = os.path.join("logs", "audio")
 
 chunk_counter = 0
 
-class STTClient:
+class STT:
     def __init__(self, model="large-v2", device="cuda", language="en", on_transcript=None, sample_rate=48000):
         self.model_name = model
         self.device = device

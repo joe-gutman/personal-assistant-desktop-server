@@ -7,7 +7,7 @@ from transformers.utils import logging as hf_logging
 
 logger = logging.getLogger(__name__)
 
-class AI:
+class LLM:
     def __init__(self):
         self.config = None
         self.model = None
@@ -83,7 +83,7 @@ class AI:
         return self._generate(prompt, max_new_tokens=100, do_sample=True,
                               temperature=0.7, top_p=0.9, top_k=50, repetition_penalty=1.2).strip()
 
-    def user_input(self, message: str) -> str | None:
+    def handle_input(self, message: str) -> str | None:
         self._load_config()        
         if not message.strip():
             return "No input detected."

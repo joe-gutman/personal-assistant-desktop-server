@@ -37,6 +37,24 @@ class TTS:
         self.voices_config = self._load_config(config_path)
         self.voice = self._load_voice(voice_name)
         
+    @staticmethod
+    def _format_text_for_tts(text: str) -> str:
+        """
+        Ensures each non-empty line ends with a punctuation mark to add natural pauses in spoken language (defaults to a period).
+        Joins all lines into a single string separated by spaces.
+        """
+        lines = text.splitlines()
+        formatted_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                formatted_lines.append("...")  # Represent empty line with a pause
+                continue
+            if not stripped.endswith(('.', '!', '?', ',', ';', ':')):
+                stripped += '.'
+            formatted_lines.append(stripped)
+        return ' '.join(formatted_lines)
+    
     def _load_config(self, config_path):
         if not os.path.isfile(config_path):
             logger.error(f"Missing config file at {config_path}")
@@ -92,31 +110,22 @@ class TTS:
             syn_config = SynthesisConfig(
                 speaker_id= speaker_id or self.speaker_id,
                 length_scale=length_scale,
-                noise_scale=0.6,
-                noise_w_scale=0.8
+                # noise_scale=0.6,
+                # noise_w_scale=0.8
             )
 
             for chunk in voice.synthesize(text, syn_config=syn_config):
                 yield chunk
         except Exception as e:
             logger.error(f"Error during speech synthesis: {e}")
+            
 
-    async def process(self, text=None, voice_name=None, speaker_id=None, inputs=None, stream=False):      
+    async def process(self, text=None, voice_name=None, speaker_id = None, inputs=None, stream=False):      
         if stream and inputs:
             logger.error("Streaming mode does not support multiple inputs.")
             return None
         
-        if inputs is None:
-            if not text:
-                logger.error("No text provided for TTS processing.")
-                return None
-            inputs = [{
-                "text": text,
-                "speed": 1.0,
-                "voice_name": voice_name or self.voice_name,
-                "speaker_id": speaker_id or self.speaker_id
-            }]
-        elif not isinstance(inputs, list):
+        if not isinstance(inputs, list):
             logger.error("Inputs must be a list of dictionaries.")
             return None
         
@@ -132,6 +141,7 @@ class TTS:
                 logger.warning("Streaming requested but no on_speech callback provided.")
                 return
             for chunk in self._generate_speech(text):
+                
                 if chunk is None:
                     continue
                 if self.on_speech:
@@ -149,14 +159,13 @@ class TTS:
 
             for idx, item in enumerate(inputs, 1):
                 full_audio = bytearray()
-                text = item.get("text", "")
+                text = self._format_text_for_tts(item.get("text", ""))
                 speed = item.get("speed", 1.0)
                 voice_name = item.get("voice_name", self.voice_name)
-                speaker_id = item.get("speaker_id", self.speaker_id)
                 
                 task_voice = self.voice
                 if voice_name != self.voice_name:
-                    task_voice = self._load_voice(voice_name, speaker_id)
+                    task_voice = self._load_voice(voice_name)
 
                 word_count = len(text.split())
                 wpm = 180
@@ -175,6 +184,8 @@ class TTS:
                     leave=True,
                     bar_format='{l_bar}{bar}| {n:.0f}/{total:.0f} [{elapsed}<{remaining}]'
                 )
+                
+                speaker_id = self.voices_config.get(voice_name, {}).get("speaker_id", self.speaker_id)
                 for chunk in self._generate_speech(text, speed=speed, voice=task_voice, speaker_id=speaker_id):
                     if chunk is None:
                         continue
@@ -196,13 +207,13 @@ class TTS:
                     speed=speed,
                     audio=bytes(full_audio),
                     sample_rate=sample_rate,
-                    voice=voice_name,
-                    speaker_id=speaker_id
+                    voice=voice_name
                 ))
         return messages
         
         
-# TO DO: SEPERATE THIS INTO IT's OWN MODULE
+# TO DO: 
+#  - Seperate the following code into a seperate script that can be run independently by the AI.
 # This script is a utility to convert text files into speech using the Piper TTS system with a chosen voice and rate of speech.
 
 import sys
@@ -224,7 +235,6 @@ def save_as_wav(audio_bytes: bytes, path: str, sample_rate: int = 22050):
 
 def main():
     voice_name = "emma"  # High quality voice, great for reading educational content
-    speaker_id = None  # Default speaker ID, can be set to a specific ID if needed
     
     # input_path = os.path.expanduser(input("Enter the full path to a text file: ").strip())
     # save_folder = os.path.expanduser(input("Enter the folder to save the audio (default: current directory): ").strip() or ".")
@@ -242,12 +252,11 @@ def main():
     tts = TTS(voice_name=voice_name)
     
     inputs = []
-    for speed in [1.0, 1.5, 2.0]:
+    for speed in [0.9, 1.3, 1.6]:
         inputs.append({
             "text": text,
             "speed": speed,
-            "voice_name": voice_name,
-            "speaker_id": speaker_id
+            "voice_name": voice_name
         })
         
     results = asyncio.run(tts.process(inputs=inputs, stream=False))
